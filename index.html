@@ -19,27 +19,45 @@
 </header>
 
 <main>
-  <section class="loader" id="dropZone" tabindex="0" aria-label="Load a save file">
-    <div class="loader-text">
-      <h2 id="loaderTitle">Drop your SaveData.zip here</h2>
+  <section class="loader" id="dropZone" aria-label="Load a save file">
+    <div class="loader-head">
+      <h2 id="loaderTitle">Load your save</h2>
       <p id="loaderStatus">No save loaded. You can browse and edit items, but saving needs a loaded save.</p>
     </div>
-    <div class="loader-actions">
-      <button type="button" class="btn" id="browseBtn">Browse</button>
-      <input type="file" id="fileInput" accept=".zip,.json" hidden>
-    </div>
-    <div class="path-hint">
-      <span class="path-label">Your save file is here
-        <button type="button" class="btn-link copy-btn" id="copyPathBtn"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>Copy Path</span></button>
-      </span>
-      <code class="path"><span>%USERPROFILE%\AppData\LocalLow\Endnight\SonsOfTheForest\Saves\</span><var>SteamID</var><span>\SinglePlayer\</span><var>SaveID</var><span>\SaveData.zip</span></code>
-      <p class="path-note"><var>SteamID</var> is the long number folder. <var>SaveID</var> is one folder per save; sort by date modified to find your latest. Hosted co-op saves are under Multiplayer folder instead of SinglePlayer.</p>
-      <p class="path-note">Or let PowerShell find it for you. Close the game, open PowerShell and paste:</p>
-      <div class="cmd">
-        <code class="path" id="helperCmd">irm https://raw.githubusercontent.com/JustinOros/sotf-inventory/main/Find-SaveData.ps1 | iex</code>
-        <button type="button" class="btn-link copy-btn" id="copyCmdBtn"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>Copy</span></button>
+
+    <div class="options">
+      <div class="option">
+        <span class="option-tag">Option A</span>
+        <h3>Browse to your file</h3>
+        <p>Your save is here:</p>
+        <code class="path"><span>%USERPROFILE%\<wbr>AppData\<wbr>LocalLow\<wbr>Endnight\<wbr>SonsOfTheForest\<wbr>Saves\<wbr></span><var>SteamID</var><span>\<wbr>SinglePlayer\<wbr></span><var>SaveID</var><span>\<wbr>SaveData.zip</span></code>
+        <p class="hint"><var>SteamID</var> is the long number folder. Pick the newest <var>SaveID</var> folder. Co-op host saves are in Multiplayer.</p>
+        <div class="option-actions">
+          <button type="button" class="btn" id="browseBtn">Browse</button>
+          <button type="button" class="btn-link copy-btn" id="copyPathBtn"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>Copy path</span></button>
+        </div>
+        <input type="file" id="fileInput" accept=".zip,.json" hidden>
       </div>
-      <p class="path-note">It opens Explorer with your latest SaveData.zip selected, ready to drag onto this page.</p>
+
+      <div class="option">
+        <span class="option-tag">Option B</span>
+        <h3>Use this PowerShell script</h3>
+        <p>Close the game, open PowerShell and paste:</p>
+        <code class="path" id="helperCmd">irm https://<wbr>raw.githubusercontent.com/<wbr>JustinOros/<wbr>sotf-inventory/<wbr>main/<wbr>Find-SaveData.ps1 | iex</code>
+        <p class="hint">Explorer opens with your latest SaveData.zip selected. Drag it onto this page.</p>
+        <div class="option-actions">
+          <button type="button" class="btn copy-btn" id="copyCmdBtn"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>Copy command</span></button>
+        </div>
+      </div>
+
+      <div class="option option-drop" id="dropTarget" tabindex="0" role="button" aria-label="Drop SaveData.zip here or press Enter to browse">
+        <span class="option-tag">Option C</span>
+        <h3>Drag and drop</h3>
+        <div class="drop-well">
+          <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Drop your SaveData.zip here</span>
+        </div>
+      </div>
     </div>
   </section>
 

@@ -7,6 +7,7 @@
   const $ = (id) => document.getElementById(id);
   const els = {
     dropZone: $("dropZone"),
+    dropTarget: $("dropTarget"),
     loaderTitle: $("loaderTitle"),
     loaderStatus: $("loaderStatus"),
     browseBtn: $("browseBtn"),
@@ -356,7 +357,7 @@
     els.copyPathBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(SAVES_PATH);
-        toast("Saves folder path copied. Paste it into the file dialog's address bar, then open your SteamID and save folders.");
+        toast("Path copied. Paste it into the file dialog's address bar, then open your SteamID and save folders.");
       } catch {
         toast("Couldn't copy. Select the path and copy it manually.", true);
       }
@@ -393,8 +394,9 @@
       els.dropZone.classList.remove("dragging");
       loadFile(e.dataTransfer.files[0]);
     });
-    els.dropZone.addEventListener("keydown", (e) => {
-      if (e.target === els.dropZone && (e.key === "Enter" || e.key === " ")) {
+    els.dropTarget.addEventListener("click", browse);
+    els.dropTarget.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         browse();
       }
