@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <title>SOTF Inventory Editor</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,6 +17,14 @@
     <h1>Inventory</h1>
     <p class="subtitle">A save editor for Sons of the Forest. Load your save, set your counts, download the new file.</p>
   </div>
+  <svg class="treeline" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="trees" width="120" height="90" patternUnits="userSpaceOnUse">
+        <path transform="scale(1 1.5)" fill="currentColor" d="M0 60 L0 44 L8 30 L5 30 L12 16 L9 16 L16 2 L23 16 L20 16 L27 30 L24 30 L32 44 L32 60 Z M30 60 L38 40 L35 40 L42 26 L39 26 L46 14 L53 26 L50 26 L57 40 L54 40 L62 60 Z M58 60 L66 36 L63 36 L71 20 L68 20 L76 6 L84 20 L81 20 L89 36 L86 36 L94 60 Z M90 60 L97 44 L94 44 L101 30 L98 30 L105 20 L112 30 L109 30 L116 44 L113 44 L120 60 Z"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#trees)"/>
+  </svg>
 </header>
 
 <main>
