@@ -172,7 +172,7 @@
     els.changeSummary.classList.toggle("has-changes", n > 0);
     els.resetBtn.disabled = n === 0;
     els.clearBtn.disabled = !clearableItems().some((i) => i.count > 0);
-    els.saveBtn.disabled = !state.source || n === 0;
+    els.saveBtn.disabled = !state.source;
     els.saveBtn.title = state.source ? "" : "Load a save first";
   }
 
