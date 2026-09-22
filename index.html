@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOTF Inventory Editor</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <h1>Inventory</h1>
+    <p class="subtitle">A save editor for Sons of the Forest. Load your save, set your counts, download the new file.</p>
+  </div>
+</header>
+
+<main>
+  <section class="loader" id="dropZone" tabindex="0" aria-label="Load a save file">
+    <div class="loader-text">
+      <h2 id="loaderTitle">Drop your SaveData.zip here</h2>
+      <p id="loaderStatus">No save loaded. You can browse and edit items, but saving needs a loaded save.</p>
+    </div>
+    <div class="loader-actions">
+      <button type="button" class="btn" id="browseBtn">Browse</button>
+      <input type="file" id="fileInput" accept=".zip,.json" hidden>
+    </div>
+    <div class="path-hint">
+      <span>Saves folder</span>
+      <code id="savesPath"></code>
+      <button type="button" class="btn-link" id="copyPathBtn">Copy path</button>
+    </div>
+  </section>
+
+  <section class="toolbar">
+    <input type="search" id="search" placeholder="Search items by name or ID" autocomplete="off" aria-label="Search items">
+    <select id="category" aria-label="Filter by category">
+      <option value="">All categories</option>
+    </select>
+    <label class="check">
+      <input type="checkbox" id="ownedOnly">
+      <span>Owned only</span>
+    </label>
+    <span class="count-label" id="resultCount"></span>
+  </section>
+
+  <div class="table-wrap">
+    <table id="inventory">
+      <thead>
+        <tr>
+          <th data-sort="name" class="col-name"><button type="button">Item</button></th>
+          <th data-sort="category" class="col-cat"><button type="button">Category</button></th>
+          <th data-sort="id" class="col-id"><button type="button">ID</button></th>
+          <th data-sort="count" class="col-count"><button type="button">Count</button></th>
+          <th data-sort="max" class="col-max"><button type="button">Max</button></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="empty" id="emptyState" hidden>No items match that search. Clear the search or pick another category.</p>
+  </div>
+</main>
+
+<footer class="savebar">
+  <span id="changeSummary">No changes</span>
+  <div class="savebar-actions">
+    <button type="button" class="btn-link" id="resetBtn" disabled>Undo changes</button>
+    <button type="button" class="btn btn-primary" id="saveBtn" disabled>Save</button>
+  </div>
+</footer>
+
+<dialog id="disclaimer">
+  <h2>Close the game first</h2>
+  <p>Quit Sons of the Forest before you edit or replace a save. The game rewrites its save files while running and can overwrite your changes or corrupt the save.</p>
+  <p>Unequip items in game before you save and quit. Equipped items are shown here but can't be edited.</p>
+  <p>This is a fan tool with no connection to Endnight Games. Your save never leaves your computer.</p>
+  <div class="dialog-actions">
+    <button type="button" class="btn btn-primary" id="disclaimerOk">I understand</button>
+  </div>
+</dialog>
+
+<dialog id="saveDialog">
+  <h2>Download the new save</h2>
+  <p>You'll get a new <strong id="saveFileName">SaveData.zip</strong> with your changes.</p>
+  <p>Keep your original file as a backup. Copy it somewhere safe before you replace it, in case the modified save doesn't load.</p>
+  <p>Then put the new file in your save folder, replacing the old one, and start the game.</p>
+  <div class="dialog-actions">
+    <button type="button" class="btn-link" id="saveCancel">Cancel</button>
+    <button type="button" class="btn btn-primary" id="saveConfirm">Download</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="items.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
