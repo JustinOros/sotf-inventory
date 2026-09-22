@@ -34,6 +34,12 @@
       </span>
       <code class="path"><span>%USERPROFILE%\AppData\LocalLow\Endnight\SonsOfTheForest\Saves\</span><var>SteamID</var><span>\SinglePlayer\</span><var>SaveID</var><span>\SaveData.zip</span></code>
       <p class="path-note"><var>SteamID</var> is the long number folder. <var>SaveID</var> is one folder per save; sort by date modified to find your latest. Hosted co-op saves are under Multiplayer folder instead of SinglePlayer.</p>
+      <p class="path-note">Or let PowerShell find it for you. Close the game, open PowerShell and paste:</p>
+      <div class="cmd">
+        <code class="path" id="helperCmd">irm https://raw.githubusercontent.com/JustinOros/sotf-inventory/main/Find-SaveData.ps1 | iex</code>
+        <button type="button" class="btn-link copy-btn" id="copyCmdBtn"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>Copy</span></button>
+      </div>
+      <p class="path-note">It opens Explorer with your latest SaveData.zip selected, ready to drag onto this page.</p>
     </div>
   </section>
 

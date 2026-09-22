@@ -14,6 +14,14 @@ Live page: https://justinoros.github.io/sotf-inventory/
 6. Click Save to download the new `SaveData.zip`.
 7. Replace the old `SaveData.zip` in your save folder with the new one and start the game.
 
+Can't find your save? Close the game, open PowerShell and paste:
+
+```
+irm https://raw.githubusercontent.com/JustinOros/sotf-inventory/main/Find-SaveData.ps1 | iex
+```
+
+It opens Explorer with your most recent `SaveData.zip` selected.
+
 A loose `PlayerInventorySaveData.json` also works if you prefer to edit the extracted file.
 
 ## Notes
@@ -33,6 +41,7 @@ Push the repo, then go to Settings, Pages, and set the source to the `main` bran
 * `styles.css` theme
 * `app.js` load, edit, and save logic
 * `items.js` item IDs, names, categories, and max counts
+* `Find-SaveData.ps1` opens Explorer at your latest `SaveData.zip`
 
 ## Credits
 

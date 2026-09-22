@@ -12,6 +12,8 @@
     browseBtn: $("browseBtn"),
     fileInput: $("fileInput"),
     copyPathBtn: $("copyPathBtn"),
+    copyCmdBtn: $("copyCmdBtn"),
+    helperCmd: $("helperCmd"),
     search: $("search"),
     category: $("category"),
     ownedOnly: $("ownedOnly"),
@@ -357,6 +359,15 @@
         toast("Saves folder path copied. Paste it into the file dialog's address bar, then open your SteamID and save folders.");
       } catch {
         toast("Couldn't copy. Select the path and copy it manually.", true);
+      }
+    });
+
+    els.copyCmdBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(els.helperCmd.textContent.trim());
+        toast("Command copied. Paste it into PowerShell and press Enter.");
+      } catch {
+        toast("Couldn't copy. Select the command and copy it manually.", true);
       }
     });
 
