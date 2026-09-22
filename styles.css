@@ -142,6 +142,27 @@ main {
   border-bottom: 1px dotted var(--blood-hi);
 }
 
+.path-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  text-decoration: none;
+}
+
+.copy-btn span {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.copy-btn svg { position: relative; top: 1px; }
+
 .path-note {
   margin: 0;
   max-width: 60em;
