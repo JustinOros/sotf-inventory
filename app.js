@@ -2,6 +2,7 @@
   const DISCLAIMER_KEY = "sotf-inventory-disclaimer-v1";
   const SAVES_PATH = "%USERPROFILE%\\AppData\\LocalLow\\Endnight\\SonsOfTheForest\\Saves";
   const INVENTORY_FILE = "PlayerInventorySaveData.json";
+  const KEEP_ON_CLEAR = new Set([351, 379, 380, 402, 412, 413, 483, 486, 552, 589]);
 
   const $ = (id) => document.getElementById(id);
   const els = {
@@ -20,6 +21,7 @@
     emptyState: $("emptyState"),
     changeSummary: $("changeSummary"),
     resetBtn: $("resetBtn"),
+    clearBtn: $("clearBtn"),
     saveBtn: $("saveBtn"),
     disclaimer: $("disclaimer"),
     disclaimerOk: $("disclaimerOk"),
@@ -157,11 +159,16 @@
     return [...state.items.values()].filter((i) => i.count !== i.original);
   }
 
+  function clearableItems() {
+    return [...state.items.values()].filter((i) => !i.equipped && !KEEP_ON_CLEAR.has(i.id));
+  }
+
   function updateSummary() {
     const n = changedItems().length;
     els.changeSummary.textContent = n === 0 ? "No changes" : `${n} item${n === 1 ? "" : "s"} changed`;
     els.changeSummary.classList.toggle("has-changes", n > 0);
     els.resetBtn.disabled = n === 0;
+    els.clearBtn.disabled = !clearableItems().some((i) => i.count > 0);
     els.saveBtn.disabled = !state.source || n === 0;
     els.saveBtn.title = state.source ? "" : "Load a save first";
   }
@@ -440,6 +447,12 @@
     els.resetBtn.addEventListener("click", () => {
       for (const item of state.items.values()) item.count = item.original;
       render();
+    });
+
+    els.clearBtn.addEventListener("click", () => {
+      for (const item of clearableItems()) item.count = 0;
+      render();
+      toast("Inventory cleared. Equipped items and starting tools were kept. Use Undo changes to restore.");
     });
 
     els.saveBtn.addEventListener("click", () => {
