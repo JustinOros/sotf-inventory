@@ -3,6 +3,7 @@
   const SAVES_PATH = "%USERPROFILE%\\AppData\\LocalLow\\Endnight\\SonsOfTheForest\\Saves";
   const INVENTORY_FILE = "PlayerInventorySaveData.json";
   const KEEP_ON_CLEAR = new Set([351, 379, 380, 402, 412, 413, 483, 486, 552, 589]);
+  const FIRST_PAGE_BLUEPRINT = 665;
 
   const $ = (id) => document.getElementById(id);
   const els = {
@@ -18,6 +19,7 @@
     search: $("search"),
     category: $("category"),
     ownedOnly: $("ownedOnly"),
+    changedOnly: $("changedOnly"),
     resultCount: $("resultCount"),
     rows: $("rows"),
     table: $("inventory"),
@@ -43,6 +45,7 @@
     query: "",
     category: "",
     ownedOnly: false,
+    changedOnly: false,
     source: null
   };
 
@@ -92,6 +95,7 @@
     const list = [...state.items.values()].filter((i) => {
       if (state.category && i.category !== state.category) return false;
       if (state.ownedOnly && i.count === 0 && !i.equipped) return false;
+      if (state.changedOnly && i.count === i.original) return false;
       if (!q) return true;
       return i.name.toLowerCase().includes(q) || (qNum !== null && i.id === qNum);
     });
@@ -209,7 +213,60 @@
     return { outer, inner, innerIsString };
   }
 
-  function applyInventory(inner) {
+  function isBlueprintPage(item) {
+    return item.category === "Blueprint" && item.id >= FIRST_PAGE_BLUEPRINT;
+  }
+
+  async function readWrapped(zip, fileName, key) {
+    const entry = Object.values(zip.files).find((f) => !f.dir && f.name.split("/").pop() === fileName);
+    if (!entry) return null;
+    try {
+      const outer = JSON.parse(await entry.async("string"));
+      const raw = outer && outer.Data && outer.Data[key];
+      if (raw === undefined) return null;
+      const innerIsString = typeof raw === "string";
+      const inner = innerIsString ? JSON.parse(raw) : raw;
+      return { path: entry.name, key, outer, inner, innerIsString };
+    } catch {
+      return null;
+    }
+  }
+
+  function writeWrapped(zip, w) {
+    w.outer.Data[w.key] = w.innerIsString ? JSON.stringify(w.inner) : w.inner;
+    zip.file(w.path, JSON.stringify(w.outer));
+  }
+
+  function unlockedPages(playerState) {
+    const ids = new Set();
+    const entries = playerState && Array.isArray(playerState.inner._entries) ? playerState.inner._entries : [];
+    for (const e of entries) {
+      const m = /^DiscoverablePageUnlocked_(\d+)$/.exec(e && e.Name);
+      if (m && e.BoolValue === true) ids.add(Number(m[1]));
+    }
+    return ids;
+  }
+
+  function describeGame(gameState) {
+    if (!gameState) return "";
+    const g = gameState.inner;
+    const parts = [];
+    if (Number.isFinite(g.GameDays)) {
+      const hh = String(g.GameHours || 0).padStart(2, "0");
+      const mm = String(g.GameMinutes || 0).padStart(2, "0");
+      parts.push(`Day ${g.GameDays} at ${hh}:${mm}`);
+    }
+    if (g.GameType) parts.push(`${g.GameType} mode`);
+    if (g.CrashSite) parts.push(`${g.CrashSite} crash site`);
+    let text = parts.join(", ");
+    if (g.SaveTime) {
+      const d = new Date(String(g.SaveTime).replace(/(\.\d{3})\d+/, "$1"));
+      if (!Number.isNaN(d.getTime())) text += `${text ? ". " : ""}Last saved ${d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}`;
+    }
+    return text ? `${text}.` : "";
+  }
+
+  function applyInventory(inner, pages) {
     buildCatalog();
     const addUnknown = (id, count) => {
       const name = SOTF_NAMES[id] || `Unknown item ${id}`;
@@ -229,6 +286,12 @@
         const id = Number(block.ItemId);
         const item = state.items.get(id) || addUnknown(id, 0);
         item.equipped = true;
+      }
+    }
+    if (pages) {
+      for (const id of pages) {
+        const item = state.items.get(id);
+        if (item && isBlueprintPage(item)) item.count = Math.max(item.count, 1);
       }
     }
     for (const item of state.items.values()) item.original = item.count;
@@ -252,14 +315,19 @@
         text = await entry.async("string");
       }
       const parsed = parseInventory(text);
-      applyInventory(parsed.inner);
-      state.source = { kind: isJson ? "json" : "zip", zip, path, fileName: isJson ? INVENTORY_FILE : "SaveData.zip", ...parsed };
+      const hotkeys = zip ? await readWrapped(zip, "HotkeysSaveData.json", "Hotkeys") : null;
+      const playerState = zip ? await readWrapped(zip, "PlayerStateSaveData.json", "PlayerState") : null;
+      const gameState = zip ? await readWrapped(zip, "GameStateSaveData.json", "GameState") : null;
+      const pages = playerState && Array.isArray(playerState.inner._entries) ? unlockedPages(playerState) : null;
+      applyInventory(parsed.inner, pages);
+      state.source = { kind: isJson ? "json" : "zip", zip, path, fileName: isJson ? INVENTORY_FILE : "SaveData.zip", hotkeys, playerState: pages ? playerState : null, gameState, ...parsed };
       state.sortKey = "count";
       state.sortDir = -1;
       const owned = [...state.items.values()].filter((i) => i.count > 0).length;
       els.dropZone.classList.add("loaded");
       els.loaderTitle.textContent = `Loaded ${file.name}`;
-      els.loaderStatus.textContent = `${owned} item types in your inventory. Drop another file to switch saves.`;
+      const info = describeGame(gameState);
+      els.loaderStatus.textContent = `${info ? info + " " : ""}${owned} item types in your inventory. Drop another file to switch saves.`;
       render();
       toast(`Loaded ${file.name}`);
     } catch (err) {
@@ -268,12 +336,17 @@
     }
   }
 
-  function buildInventoryText() {
-    const { outer, inner, innerIsString } = state.source;
+  function applyChanges() {
+    const src = state.source;
+    const { inner } = src;
     const blocks = inner.ItemInstanceManagerData.ItemBlocks;
+    const pagesInState = !!src.playerState;
     const removed = new Set();
+    const pageChanges = [];
     for (const item of changedItems()) {
       if (item.equipped) continue;
+      const page = pagesInState && isBlueprintPage(item);
+      if (page) pageChanges.push(item);
       const matches = blocks.filter((b) => Number(b.ItemId) === item.id);
       if (item.count === 0) {
         removed.add(item.id);
@@ -281,7 +354,7 @@
         continue;
       }
       if (matches.length === 0) {
-        blocks.push({ ItemId: item.id, TotalCount: item.count, UniqueItems: [] });
+        if (!page) blocks.push({ ItemId: item.id, TotalCount: item.count, UniqueItems: [] });
         continue;
       }
       const [first, ...rest] = matches;
@@ -295,8 +368,36 @@
     if (Array.isArray(slots) && removed.size) {
       inner.QuickSelect.Slots = slots.filter((s) => !(s && removed.has(Number(s.ItemId))));
     }
-    outer.Data.PlayerInventory = innerIsString ? JSON.stringify(inner) : inner;
-    return JSON.stringify(outer);
+    src.outer.Data.PlayerInventory = src.innerIsString ? JSON.stringify(inner) : inner;
+    const touched = [];
+    if (src.hotkeys && removed.size) {
+      const h = src.hotkeys.inner;
+      for (const key of ["RightHandItemIds", "LeftHandItemIds"]) {
+        if (Array.isArray(h[key])) h[key] = h[key].map((id) => (removed.has(Number(id)) ? -1 : id));
+      }
+      touched.push(src.hotkeys);
+    }
+    if (src.playerState && pageChanges.length) {
+      const entries = src.playerState.inner._entries;
+      const upsert = (name) => {
+        const e = entries.find((x) => x && x.Name === name);
+        if (e) e.BoolValue = true;
+        else entries.push({ Name: name, BoolValue: true });
+      };
+      for (const item of pageChanges) {
+        const unlockName = `DiscoverablePageUnlocked_${item.id}`;
+        if (item.count > 0) {
+          upsert(unlockName);
+          upsert(`hasOwned_${String(item.id).padStart(8, "0")}`);
+        } else {
+          for (let i = entries.length - 1; i >= 0; i--) {
+            if (entries[i] && entries[i].Name === unlockName) entries.splice(i, 1);
+          }
+        }
+      }
+      touched.push(src.playerState);
+    }
+    return { inventoryText: JSON.stringify(src.outer), touched };
   }
 
   function download(blob, name) {
@@ -312,11 +413,12 @@
 
   async function doSave() {
     try {
-      const text = buildInventoryText();
+      const { inventoryText: text, touched } = applyChanges();
       const src = state.source;
       let blob;
       if (src.kind === "zip") {
         src.zip.file(src.path, text);
+        for (const w of touched) writeWrapped(src.zip, w);
         blob = await src.zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
       } else {
         blob = new Blob([text], { type: "application/json" });
@@ -409,6 +511,7 @@
     });
     els.category.addEventListener("change", () => { state.category = els.category.value; render(); });
     els.ownedOnly.addEventListener("change", () => { state.ownedOnly = els.ownedOnly.checked; render(); });
+    els.changedOnly.addEventListener("change", () => { state.changedOnly = els.changedOnly.checked; render(); });
 
     els.table.querySelector("thead").addEventListener("click", (e) => {
       const th = e.target.closest("th[data-sort]");
