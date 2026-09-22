@@ -113,20 +113,38 @@ main {
 
 .path-hint {
   grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
-  align-items: baseline;
+  display: grid;
+  gap: 0.4rem;
+  justify-items: start;
   font-size: 0.875rem;
   color: var(--fog);
   padding-top: 1rem;
   border-top: 1px solid var(--line);
 }
 
-.path-hint code {
+.path {
+  display: block;
+  width: 100%;
   font-family: Consolas, "Courier New", monospace;
+  font-size: 0.95rem;
   color: var(--bone);
-  word-break: break-all;
+  background: var(--spruce);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0.6rem 0.75rem;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.path-hint var {
+  font-style: normal;
+  color: #e0a39a;
+  border-bottom: 1px dotted var(--blood-hi);
+}
+
+.path-note {
+  margin: 0;
+  max-width: 60em;
 }
 
 .btn {

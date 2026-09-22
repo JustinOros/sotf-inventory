@@ -29,9 +29,10 @@
       <input type="file" id="fileInput" accept=".zip,.json" hidden>
     </div>
     <div class="path-hint">
-      <span>Saves folder</span>
-      <code id="savesPath"></code>
-      <button type="button" class="btn-link" id="copyPathBtn">Copy path</button>
+      <span class="path-label">Your save file is here</span>
+      <code class="path"><span>%USERPROFILE%\AppData\LocalLow\Endnight\SonsOfTheForest\Saves\</span><var>SteamID</var><span>\SinglePlayer\</span><var>SaveID</var><span>\SaveData.zip</span></code>
+      <p class="path-note"><var>SteamID</var> is the long number folder. <var>SaveID</var> is one folder per save; sort by date modified to find your latest. Hosted co-op saves are under Multiplayer instead of SinglePlayer.</p>
+      <button type="button" class="btn-link" id="copyPathBtn">Copy Saves folder path</button>
     </div>
   </section>
 

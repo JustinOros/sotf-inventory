@@ -10,7 +10,6 @@
     loaderStatus: $("loaderStatus"),
     browseBtn: $("browseBtn"),
     fileInput: $("fileInput"),
-    savesPath: $("savesPath"),
     copyPathBtn: $("copyPathBtn"),
     search: $("search"),
     category: $("category"),
@@ -345,11 +344,10 @@
   }
 
   function bind() {
-    els.savesPath.textContent = SAVES_PATH;
     els.copyPathBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(SAVES_PATH);
-        toast("Path copied. Paste it into the file dialog's address bar.");
+        toast("Saves folder path copied. Paste it into the file dialog's address bar, then open your SteamID and save folders.");
       } catch {
         toast("Couldn't copy. Select the path and copy it manually.", true);
       }
